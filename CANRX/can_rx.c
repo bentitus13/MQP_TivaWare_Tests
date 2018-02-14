@@ -291,15 +291,15 @@ InitCAN0(void)
     //
     CANBitRateSet(CAN0_BASE, SysCtlClockGet(), 500000);
 
+    // Register interrupt in vector table
+    CANIntRegister(CAN0_BASE, CAN0IntHandler);
+
     //
     // Enable interrupts on the CAN peripheral.  This example uses static
     // allocation of interrupt handlers which means the name of the handler
     // is in the vector table of startup code.
     //
     CANIntEnable(CAN0_BASE, CAN_INT_MASTER | CAN_INT_ERROR | CAN_INT_STATUS);
-
-    // Register interrupt in vector table
-    CANIntRegister(CAN0_BASE, CAN0IntHandler);
 
     //
     // Enable the CAN interrupt on the processor (NVIC).
@@ -316,7 +316,7 @@ InitCAN0(void)
     // any CAN ID.  In order to receive any CAN ID, the ID and mask must both
     // be set to 0, and the ID filter enabled.
     //
-    g_sCAN0RxMessage.ui32MsgID = 2;
+    g_sCAN0RxMessage.ui32MsgID = 0;
     g_sCAN0RxMessage.ui32MsgIDMask = 0;
     g_sCAN0RxMessage.ui32Flags = MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER;
     g_sCAN0RxMessage.ui32MsgLen = sizeof(g_ui8RXMsgData);

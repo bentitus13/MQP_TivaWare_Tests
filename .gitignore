@@ -13,3 +13,5 @@ CANTX\Release\
 CANTX\.xdchelp
 CANTX\.config
 CANTX\.launches\
+.jxbrowser-data\
+.metadata\
