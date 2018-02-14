@@ -1,1 +1,0 @@
-"./can_tx.obj" "./startup_ccs.obj" "./drivers/cfal96x64x16.obj" "./utils/uartstdio.obj" "../can_ccs.cmd" -llibc.a -l"/driverlib/ccs/Debug/driverlib.lib" -l"/grlib/ccs/Debug/grlib.lib" 
