@@ -4,16 +4,19 @@
 
 CG_TOOL_ROOT := /home/alex/ti/ccsv7/tools/compiler/ti-cgt-arm_17.9.0.STS
 
-GEN_OPTS__FLAG := 
-GEN_CMDS__FLAG := 
+GEN_OPTS__FLAG := --cmd_file="configPkg/compiler.opt"
+GEN_CMDS__FLAG := -l"configPkg/linker.cmd"
 
 ORDERED_OBJS += \
-"./main.obj" \
-"./tm4c123gh6pm_startup_ccs.obj" \
-"../tm4c123gh6pm.cmd" \
+"./EK_TM4C123GXL.obj" \
+"./USBKBD.obj" \
+"./usbkeyboarddevice.obj" \
+"../EK_TM4C123GXL.cmd" \
 $(GEN_CMDS__FLAG) \
+-l"/home/alex/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/grlib/ccs/Debug/grlib.lib" \
+-l"/home/alex/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/usblib/ccs/Debug/usblib.lib" \
+-l"/home/alex/ti/tirtos_tivac_2_16_00_08/products/TivaWare_C_Series-2.1.1.71b/driverlib/ccs/Debug/driverlib.lib" \
 -llibc.a \
--l"C:\ti\TivaWare_C_Series-2.1.3.156/driverlib/ccs/Debug/driverlib.lib" \
 
 -include ../makefile.init
 
@@ -120,42 +123,43 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-TivaWare_Test.out \
+usbkeyboarddevice_EK_TM4C123GXL_TI.out \
 
 EXE_OUTPUTS__QUOTED += \
-"TivaWare_Test.out" \
+"usbkeyboarddevice_EK_TM4C123GXL_TI.out" \
 
 BIN_OUTPUTS += \
-TivaWare_Test.hex \
+usbkeyboarddevice_EK_TM4C123GXL_TI.hex \
 
 BIN_OUTPUTS__QUOTED += \
-"TivaWare_Test.hex" \
+"usbkeyboarddevice_EK_TM4C123GXL_TI.hex" \
 
 
 # All Target
 all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
-	@$(MAKE) --no-print-directory -Onone "TivaWare_Test.out"
+	@$(MAKE) --no-print-directory -Onone "usbkeyboarddevice_EK_TM4C123GXL_TI.out"
 
 # Tool invocations
-TivaWare_Test.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
+usbkeyboarddevice_EK_TM4C123GXL_TI.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: "$@"'
 	@echo 'Invoking: ARM Linker'
-	"/home/alex/ti/ccsv7/tools/compiler/ti-cgt-arm_17.9.0.STS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi -z -m"TivaWare_Test.map" --heap_size=0 --stack_size=2048 -i"/home/alex/ti/ccsv7/tools/compiler/ti-cgt-arm_17.9.0.STS/lib" -i"/home/alex/ti/ccsv7/tools/compiler/ti-cgt-arm_17.9.0.STS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="TivaWare_Test_linkInfo.xml" --rom_model -o "TivaWare_Test.out" $(ORDERED_OBJS)
+	"/home/alex/ti/ccsv7/tools/compiler/ti-cgt-arm_17.9.0.STS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --define=ccs="ccs" --define=PART_TM4C123GH6PM --define=ccs --define=TIVAWARE -g --gcc --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on --abi=eabi -z -m"usbkeyboarddevice_EK_TM4C123GXL_TI.map" --heap_size=0 --stack_size=512 -i"/home/alex/ti/ccsv7/tools/compiler/ti-cgt-arm_17.9.0.STS/lib" -i"/home/alex/ti/ccsv7/tools/compiler/ti-cgt-arm_17.9.0.STS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="usbkeyboarddevice_EK_TM4C123GXL_TI_linkInfo.xml" --rom_model -o "usbkeyboarddevice_EK_TM4C123GXL_TI.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: "$@"'
 	@echo ' '
 
-TivaWare_Test.hex: $(EXE_OUTPUTS)
+usbkeyboarddevice_EK_TM4C123GXL_TI.hex: $(EXE_OUTPUTS)
 	@echo 'Building files: $(strip $(EXE_OUTPUTS__QUOTED))'
 	@echo 'Invoking: ARM Hex Utility'
-	"/home/alex/ti/ccsv7/tools/compiler/ti-cgt-arm_17.9.0.STS/bin/armhex"  -o "TivaWare_Test.hex" $(EXE_OUTPUTS__QUOTED)
+	"/home/alex/ti/ccsv7/tools/compiler/ti-cgt-arm_17.9.0.STS/bin/armhex"  -o "usbkeyboarddevice_EK_TM4C123GXL_TI.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $(strip $(EXE_OUTPUTS__QUOTED))'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "main.obj" "tm4c123gh6pm_startup_ccs.obj" 
-	-$(RM) "main.d" "tm4c123gh6pm_startup_ccs.d" 
+	-$(RM) $(GEN_CMDS__QUOTED)$(GEN_MISC_FILES__QUOTED)$(BIN_OUTPUTS__QUOTED)$(GEN_FILES__QUOTED)$(EXE_OUTPUTS__QUOTED)$(GEN_OPTS__QUOTED)
+	-$(RMDIR) $(GEN_MISC_DIRS__QUOTED)
+	-$(RM) "EK_TM4C123GXL.obj" "USBKBD.obj" "usbkeyboarddevice.obj" 
+	-$(RM) "EK_TM4C123GXL.d" "USBKBD.d" "usbkeyboarddevice.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
