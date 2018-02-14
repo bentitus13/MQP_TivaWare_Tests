@@ -12,7 +12,6 @@ GEN_CMDS__FLAG :=
 ORDERED_OBJS += \
 "./can_rx.obj" \
 "./startup_ccs.obj" \
-"./drivers/cfal96x64x16.obj" \
 "./utils/uartstdio.obj" \
 "../can_ccs.cmd" \
 $(GEN_CMDS__FLAG) \
@@ -28,10 +27,8 @@ RMDIR := RMDIR /S/Q
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir_vars.mk
--include drivers/subdir_vars.mk
 -include utils/subdir_vars.mk
 -include subdir_rules.mk
--include drivers/subdir_rules.mk
 -include utils/subdir_rules.mk
 -include objects.mk
 
@@ -148,7 +145,7 @@ all: CANRX.out
 CANRX.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: ARM Linker'
-	"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.1.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me -O2 --advice:power=all --define=ccs="ccs" --define=PART_TM4C123GH6PGE --define=TARGET_IS_TM4C123_RB1 -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --gen_func_subsections=on --abi=eabi --ual -z -m"can_ccs.map" --heap_size=0 --stack_size=512 -i"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.1.LTS/lib" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.1.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="CANRX_linkInfo.xml" --rom_model -o "CANRX.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.1.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me -O2 --advice:power=all --define=ccs="ccs" --define=TARGET_IS_TM4C123_RB1 --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --gen_func_subsections=on --abi=eabi --ual -z -m"can_ccs.map" --heap_size=0 --stack_size=512 -i"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.1.LTS/lib" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.1.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="CANRX_linkInfo.xml" --rom_model -o "CANRX.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	@$(MAKE) --no-print-directory post-build
@@ -163,8 +160,8 @@ CANRX.bin: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "can_rx.obj" "startup_ccs.obj" "drivers\cfal96x64x16.obj" "utils\uartstdio.obj" 
-	-$(RM) "can_rx.d" "startup_ccs.d" "drivers\cfal96x64x16.d" "utils\uartstdio.d" 
+	-$(RM) "can_rx.obj" "startup_ccs.obj" "utils\uartstdio.obj" 
+	-$(RM) "can_rx.d" "startup_ccs.d" "utils\uartstdio.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

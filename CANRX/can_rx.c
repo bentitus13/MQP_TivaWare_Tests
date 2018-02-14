@@ -33,10 +33,6 @@
 #include "driverlib/pin_map.h"
 #include "driverlib/rom.h"
 #include "driverlib/sysctl.h"
-//#include "driverlib/uart.h"
-//#include "grlib/grlib.h"
-//#include "drivers/cfal96x64x16.h"
-//#include "utils/uartstdio.h"
 #include "driverlib/interrupt.h"
 
 //*****************************************************************************
