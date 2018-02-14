@@ -6,11 +6,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "inc/hw_can.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_ints.h"
 
 #include "driverlib/sysctl.h"
 #include "driverlib/adc.h"
+#include "driverlib/can.h"
 #include "driverlib/gpio.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/pin_map.h"
@@ -19,31 +21,43 @@
 #include "driverlib/systick.h"
 #include "driverlib/timer.h"
 
-int g_i32Value;          // Value from the ADC
-uint32_t g_ui32PWMValue; // Value to PWM Generator
-uint32_t g_ui32SPIData;  // Vale from SPI ADC
-bool state = false;      // State of the ADC waveform pin
+tCANMsgObject sMsgObjectRx; // Receive  CAN message settings
+tCANMsgObject sMsgObjectTx; // Transmit CAN message settings
+uint8_t ui8CANMsgData;      // CAN message data
+
+uint32_t g_i32Value;        // Value from the ADC
+uint32_t g_ui32PWMValue;    // Value to PWM Generator
+uint32_t g_ui32SPIData;     // Vale from SPI ADC
+bool state = false;         // State of the ADC waveform pin
 
 void setPins(void) {
     // Initialize PE0 as ADC input
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
     GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_0);
 
-    // Initialize PB1 as GPIO output to toggle when the ADC is on/off
+    // Initialize PB0, PB1, PB5 as GPIO output
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-    GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_1 | GPIO_PIN_5);
+    GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_5);
+    GPIOPinTypeGPIOInput(GPIO_PORTB_BASE, GPIO_PIN_2);
 
     // Initialize PB6 as PWM output
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
     GPIOPinConfigure(GPIO_PB6_M0PWM0);
     GPIOPinTypePWM(GPIO_PORTB_BASE, GPIO_PIN_6);
 
+    // Initialize SSI
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-    GPIOPinConfigure(GPIO_PA2_SSI0CLK);
-    GPIOPinConfigure(GPIO_PA3_SSI0FSS);
-    GPIOPinConfigure(GPIO_PA4_SSI0RX);
-    GPIOPinConfigure(GPIO_PA5_SSI0TX);
+    GPIOPinConfigure(GPIO_PA2_SSI0CLK);          // PA2 -> SCLK
+    GPIOPinConfigure(GPIO_PA3_SSI0FSS);          // PA3 -> CS
+    GPIOPinConfigure(GPIO_PA4_SSI0RX);           // PA4 -> MISO
+    GPIOPinConfigure(GPIO_PA5_SSI0TX);           // PA5 -> MOSI
     GPIOPinTypeSSI(GPIO_PORTA_BASE, GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5);
+
+    // Initialize PE4 and PE5 as CAN0Rx and CAN0Tx respectively
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+    GPIOPinConfigure(GPIO_PE4_CAN0RX);
+    GPIOPinConfigure(GPIO_PE5_CAN0TX);
+    GPIOPinTypeCAN(GPIO_PORTE_BASE, GPIO_PIN_4 | GPIO_PIN_5);
 }
 
 void getADC(void) {
@@ -55,9 +69,9 @@ void getADC(void) {
     ADCSequenceDataGet(ADC0_BASE, 0, &g_i32Value);
 
     g_i32Value -= 2048;
-    if (g_i32Value < 0) {
+    if ((int) g_i32Value < 0) {
         GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_5, GPIO_PIN_5);
-        g_ui32PWMValue = g_i32Value*(-2.5);
+        g_ui32PWMValue = (int) g_i32Value*(-2.5);
         PWMPulseWidthSet(PWM0_BASE, PWM_GEN_0, g_ui32PWMValue);
     } else {
         g_ui32PWMValue = g_i32Value*2.5;
@@ -116,9 +130,52 @@ void startADC(void) {
 //    ADCIntClear(ADC0_BASE, 0);                  // clear ADC sequence interrupt flag
 }
 
+uint32_t led;
+void sendCAN(void) {
+    if (led) {
+        *sMsgObjectTx.pui8MsgData = (*sMsgObjectRx.pui8MsgData == 1) ? 0: 1;
+        CANMessageSet(CAN0_BASE, 2, &sMsgObjectTx, MSG_OBJ_TYPE_TX);
+    }
+}
+void writeLED(void) {
+    led = (*sMsgObjectRx.pui8MsgData == 0) ? 0: 1;
+    GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_0, led);
+}
+int count;
 void timerISR(void) {
     TimerIntClear(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
     startADC();
+    count++;
+    if (count > 500) {
+        count = 0;
+        writeLED();
+        sendCAN();
+    }
+}
+
+void CANISR(void) {
+    uint32_t ui32Status;
+
+    //
+    // Read the CAN interrupt status to find the cause of the interrupt
+    //
+    ui32Status = CANIntStatus(CAN0_BASE, CAN_INT_STS_CAUSE);
+
+    switch(ui32Status) {
+    case CAN_INT_INTID_STATUS:
+        // Read error status
+        ui32Status = CANStatusGet(CAN0_BASE, CAN_STS_CONTROL);
+        break;
+    case 1: // Message object 1 received message
+        // Clear interrupt
+        CANIntClear(CAN0_BASE, 1);
+
+        // Read in message (don't normally do this in ISR)
+        CANMessageSet(CAN0_BASE, 1, &sMsgObjectRx, MSG_OBJ_TYPE_RX);
+        break;
+    default:
+        break;
+    }
 }
 
 void setTimer(void) {
@@ -165,10 +222,17 @@ void setPWM(void) {
 }
 
 void setSSI(void) {
+    // Enable peripheral
     SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI0);
 
+    // Set clock to system clock
     SSIClockSourceSet(SSI0_BASE, SSI_CLOCK_SYSTEM);
 
+    /*  Configure SSI:
+     *  Clock speed -> System clock
+     *  Mode -> polarity 0, phase 0
+     *
+     */
     SSIConfigSetExpClk(SSI0_BASE, SysCtlClockGet(), SSI_FRF_MOTO_MODE_0, SSI_MODE_MASTER, 500000, 16);
     SSIEnable(SSI0_BASE);
 
@@ -176,6 +240,51 @@ void setSSI(void) {
     SSIDataPut(SSI0_BASE, 0xD000);
     while(SSIBusy(SSI0_BASE)) ;
     SSIDataGet(SSI0_BASE, &g_ui32SPIData);
+}
+
+void setCAN(void) {
+    // Enable peripheral
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_CAN0);
+
+    // Reset CAN module and objects associated with it
+    CANInit(CAN0_BASE);
+
+    // Configure controller for 1Mbit operation
+    CANBitRateSet(CAN0_BASE, SysCtlClockGet(), 1000000);
+
+    // Initialize object to accept messages with ID
+    sMsgObjectRx.ui32MsgID = (0x400);   // Look for messages with ID     = 1XX_XXXX_XXXX
+    sMsgObjectRx.ui32MsgIDMask = 0x7E0; // Filter out messages with mask = 000_0000_0111
+    // Filter IDs with mask and enables Rx interrupt
+    sMsgObjectRx.ui32Flags = MSG_OBJ_USE_ID_FILTER | MSG_OBJ_RX_INT_ENABLE;
+
+    // set up CAN objects with settings in sMsgObjectRx as receive message objects
+    CANMessageSet(CAN0_BASE, 1, &sMsgObjectRx, MSG_OBJ_TYPE_RX); // CAN object 1
+//    CANMessageSet(CAN0_BASE, 2, &sMsgObjectRx, MSG_OBJ_TYPE_RX); // CAN object 2
+//    CANMessageSet(CAN0_BASE, 3, &sMsgObjectRx, MSG_OBJ_TYPE_RX); // CAN object 3
+
+    // Set message data for 1 byte transmission
+    ui8CANMsgData = 0x01;
+
+    // Set up transmit message
+    sMsgObjectTx.ui32MsgID = 0x400 | led; // ID = 0x400
+    sMsgObjectTx.ui32Flags = 0;     // No flags
+    sMsgObjectTx.ui32MsgLen = 1;    // Length 1
+    sMsgObjectTx.pui8MsgData = &ui8CANMsgData; // Give some data
+
+    // Set up CAN0 interrupts
+    CANIntEnable(CAN0_BASE, CAN_INT_MASTER | CAN_INT_ERROR | CAN_INT_STATUS);
+
+    // Register the ISR CANISR()
+    CANIntRegister(CAN0_BASE, CANISR);
+
+    // Enable CAN0 interrupt
+    IntEnable(INT_CAN0);
+
+    //
+
+    // Enable CAN0 device
+    CANEnable(CAN0_BASE);
 }
 
 
@@ -189,10 +298,12 @@ int main(void) {
     SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
 
     setPins();
+    led = (GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_2)) >> 2;
     setADC();
     setPWM();
     setTimer();
     setSSI();
+    setCAN();
     IntMasterEnable();
     while(1) {
 

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;CANTX/can.c&apos; to &apos;can_tx.c&apos;" description="Rename resource &apos;can.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="can.c" name="can_tx.c" stamp="1518573034015" updateReferences="true"/>
+</session>
