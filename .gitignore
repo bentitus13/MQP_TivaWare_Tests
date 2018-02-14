@@ -3,3 +3,13 @@ TivaWare_Test\Release\
 TivaWare_Test\.xdchelp
 TivaWare_Test\.config
 TivaWare_Test\.launches\
+CANRX\Debug
+CANRX\Release\
+CANRX\.xdchelp
+CANRX\.config
+CANRX\.launches\
+CANTX\Debug
+CANTX\Release\
+CANTX\.xdchelp
+CANTX\.config
+CANTX\.launches\
