@@ -126,6 +126,7 @@ tCANMsgObject g_sCAN0RxMessage;
 //
 //*****************************************************************************
 uint8_t g_ui8RXMsgData;
+//uint8_t g_ui8RXMsgData[8];
 
 //*****************************************************************************
 //
@@ -150,77 +151,39 @@ CAN0IntHandler(void)
 {
     uint32_t ui32Status;
 
-    //
     // Read the CAN interrupt status to find the cause of the interrupt
-    //
-    // CAN_INT_STS_CAUSE register values
-    // 0x0000        = No Interrupt Pending
-    // 0x0001-0x0020 = Number of message object that caused the interrupt
-    // 0x8000        = Status interrupt
-    // all other numbers are reserved and have no meaning in this system
-    //
+    // 0           = No Interrupt
+    // 0x01 - 0x20 = Message object that caused the interrupt
+    // 0x8000      = Status interrupt :(
     ui32Status = CANIntStatus(CAN0_BASE, CAN_INT_STS_CAUSE);
 
-    //
-    // If this was a status interrupt acknowledge it by reading the CAN
-    // controller status register.
-    //
+    // If this was a status interrupt
     if(ui32Status == CAN_INT_INTID_STATUS)
     {
-        //
-        // Read the controller status.  This will return a field of status
-        // error bits that can indicate various errors. Refer to the
-        // API documentation for details about the error status bits.
-        // The act of reading this status will clear the interrupt.
-        //
+        // Get Status register. This clears the interrupt
         ui32Status = CANStatusGet(CAN0_BASE, CAN_STS_CONTROL);
 
-        //
-        // Add ERROR flags to list of current errors. To be handled
-        // later, because it would take too much time here in the
-        // interrupt.
-        //
+        // Set the error flags to the status register
         g_ui32ErrFlag |= ui32Status;
     }
 
-    //
-    // Check if the cause is message object RXOBJECT, which we are using
-    // for receiving messages.
-    //
+    // If RXOBJECT received a message
     else if(ui32Status == RXOBJECT)
     {
-        //
-        // Getting to this point means that the RX interrupt occurred on
-        // message object RXOBJECT, and the message reception is complete.
-        // Clear the message object interrupt.
-        //
+        // Clear the interrupt for RXOBJECT
         CANIntClear(CAN0_BASE, RXOBJECT);
 
-        //
-        // Increment a counter to keep track of how many messages have been
-        // received.  In a real application this could be used to set flags to
-        // indicate when a message is received.
-        //
+        // Increment received message count
         g_ui32RXMsgCount++;
 
-        //
-        // Set flag to indicate received message is pending.
-        //
+        // Set flag that received a message
         g_bRXFlag = true;
 
-        //
-        // Since a message was received, clear any error flags.
-        // This is done because before the message is received it triggers
-        // a Status Interrupt for RX complete. by clearing the flag here we
-        // prevent unnecessary error handling from happeneing
-        //
+        // Clear error flags
         g_ui32ErrFlag = 0;
     }
 
-    //
-    // Otherwise, something unexpected caused the interrupt.  This should
-    // never happen.
-    //
+    // Shouldn't happen
     else
     {
         //
@@ -230,211 +193,103 @@ CAN0IntHandler(void)
 }
 
 void writeLEDs(uint8_t leds) {
-    GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, leds&0x0F);
+    GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, leds&0x0E);
 }
 
-//*****************************************************************************
-//
-// Setup CAN0 to both send and receive at 500KHz.
-// Interrupts on
-// Use PE4 / PE5
-//
-//*****************************************************************************
-void
-InitCAN0(void)
-{
+
+void InitCAN0(void) {
     // Enable port F
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+
     // Enable pins F0, F1, F2, F3
-    GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
-    //
-    // For this example CAN0 is used with RX and TX pins on port E4 and E5.
-    // GPIO port E needs to be enabled so these pins can be used.
-    //
+    GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
+
+    // Enable Port E
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
 
-    //
-    // Configure the GPIO pin muxing to select CAN0 functions for these pins.
-    // This step selects which alternate function is available for these pins.
-    //
+    // Set pins to be used for CAN
     GPIOPinConfigure(GPIO_PE4_CAN0RX);
     GPIOPinConfigure(GPIO_PE5_CAN0TX);
 
-    //
-    // Enable the alternate function on the GPIO pins.  The above step selects
-    // which alternate function is available.  This step actually enables the
-    // alternate function instead of GPIO for these pins.
-    //
+    // Enable CAN functionality for pins E4, E5
     GPIOPinTypeCAN(GPIO_PORTE_BASE, GPIO_PIN_4 | GPIO_PIN_5);
 
-    //
-    // The GPIO port and pins have been set up for CAN.  The CAN peripheral
-    // must be enabled.
-    //
+    // Enable CAN0 peripheral
     SysCtlPeripheralEnable(SYSCTL_PERIPH_CAN0);
 
-    //
-    // Initialize the CAN controller
-    //
+    // Initialize CAN0 controller
     CANInit(CAN0_BASE);
 
-    //
-    // Set up the bit rate for the CAN bus.  This function sets up the CAN
-    // bus timing for a nominal configuration.  You can achieve more control
-    // over the CAN bus timing by using the function CANBitTimingSet() instead
-    // of this one, if needed.
-    // In this example, the CAN bus is set to 500 kHz.
-    //
-    CANBitRateSet(CAN0_BASE, SysCtlClockGet(), 500000);
+    // Set CAN0 to run at 1Mbps
+    CANBitRateSet(CAN0_BASE, SysCtlClockGet(), 1000000);
 
     // Register interrupt in vector table
     CANIntRegister(CAN0_BASE, CAN0IntHandler);
 
-    //
-    // Enable interrupts on the CAN peripheral.  This example uses static
-    // allocation of interrupt handlers which means the name of the handler
-    // is in the vector table of startup code.
-    //
+    // Enable interrupts, error interrupts, and status interrupts
     CANIntEnable(CAN0_BASE, CAN_INT_MASTER | CAN_INT_ERROR | CAN_INT_STATUS);
 
-    //
-    // Enable the CAN interrupt on the processor (NVIC).
-    //
+    // Enable CAN0 interrupt in interrupt controller
     IntEnable(INT_CAN0);
 
-    //
-    // Enable the CAN for operation.
-    //
+    // Enable CAN0
     CANEnable(CAN0_BASE);
 
-    //
-    // Initialize a message object to be used for receiving CAN messages with
-    // any CAN ID.  In order to receive any CAN ID, the ID and mask must both
-    // be set to 0, and the ID filter enabled.
-    //
-    g_sCAN0RxMessage.ui32MsgID = 0;
-    g_sCAN0RxMessage.ui32MsgIDMask = 0;
+    // Set up receive message object
+    g_sCAN0RxMessage.ui32MsgID = 2;     // Accept any ID
+    g_sCAN0RxMessage.ui32MsgIDMask = 0; // Accept any ID
+    // Interrupt enable and use ID filter
     g_sCAN0RxMessage.ui32Flags = MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER;
+    // Message length = 1 byte (g_ui8RXMsgData is 8 bits long)
     g_sCAN0RxMessage.ui32MsgLen = sizeof(g_ui8RXMsgData);
+//    g_sCAN0RxMessage.ui32MsgLen = 1;
+//    g_sCAN0RxMessage.pui8MsgData = (uint8_t *)&g_ui8RXMsgData;
 
-    //
-    // Now load the message object into the CAN peripheral.  Once loaded the
-    // CAN will receive any message on the bus, and an interrupt will occur.
-    // Use message object RXOBJECT for receiving messages (this is not the
-    //same as the CAN ID which can be any value in this example).
-    //
+    // Load message 1 with g_sCAN0RxMessage settings
     CANMessageSet(CAN0_BASE, RXOBJECT, &g_sCAN0RxMessage, MSG_OBJ_TYPE_RX);
 }
 
-//*****************************************************************************
-//
-// Can ERROR handling. When a message is received if there is an erro it is
-// saved to g_ui32ErrFlag, the Error Flag Set. Below the flags are checked
-// and cleared. It is left up to the user to add handling fuctionality if so
-// desiered.
-//
-// For more information on the error flags please see the CAN section of the
-// microcontroller datasheet.
-//
-// NOTE: you may experience errors during setup when only one board is powered
-// on. This is caused by one board sending signals and there not being another
-// board there to acknoledge it. Dont worry about these errors, they can be
-// disregarded.
-//
-//*****************************************************************************
-void
-CANErrorHandler(void)
-{
-    //
-    // CAN controller has entered a Bus Off state.
-    //
+void CANErrorHandler(void) {
+    // If the bus is off (Too many errors happened)
     if(g_ui32ErrFlag & CAN_STATUS_BUS_OFF)
     {
-        //
-        // Handle Error Condition here
-        //
-
-        //
-        // Clear CAN_STATUS_BUS_OFF Flag
-        //
+        // Clear the flag
         g_ui32ErrFlag &= ~(CAN_STATUS_BUS_OFF);
 
     }
 
-    //
-    // CAN controller error level has reached warning level.
-    //
+    // If there have been many of errors (more than 96)
     if(g_ui32ErrFlag & CAN_STATUS_EWARN)
     {
-        //
-        // Handle Error Condition here
-        //
-        //UARTprintf("    ERROR: CAN_STATUS_EWARN \n");
-
-        //
-        // Clear CAN_STATUS_EWARN Flag
-        //
+        // Clear the flag
         g_ui32ErrFlag &= ~(CAN_STATUS_EWARN);
     }
 
-    //
-    // CAN controller error level has reached error passive level.
-    //
+    // If there have been a lot of errors (more than 127)
     if(g_ui32ErrFlag & CAN_STATUS_EPASS)
     {
-        //
-        // Handle Error Condition here
-        //
-
-        //
-        // Clear CAN_STATUS_EPASS Flag
-        //
+        // Clear the flag
         g_ui32ErrFlag &= ~(CAN_STATUS_EPASS);
     }
 
-    //
-    // A message was received successfully since the last read of this status.
-    //
+    // Received message successfully
     if(g_ui32ErrFlag & CAN_STATUS_RXOK)
     {
-        //
-        // Handle Error Condition here
-        //
-
-        //
-        // Clear CAN_STATUS_RXOK Flag
-        //
+        // Clear the flag
         g_ui32ErrFlag &= ~(CAN_STATUS_RXOK);
     }
 
-    //
-    // A message was transmitted successfully since the last read of this
-    // status.
-    //
+    // Transmit message successfully
     if(g_ui32ErrFlag & CAN_STATUS_TXOK)
     {
-        //
-        // Handle Error Condition here
-        //
-
-        //
-        // Clear CAN_STATUS_TXOK Flag
-        //
+        // Clear the flag
         g_ui32ErrFlag &= ~(CAN_STATUS_TXOK);
     }
 
-    //
-    // This is the mask for the last error code field.
-    //
+    // Check the LEC
     if(g_ui32ErrFlag & CAN_STATUS_LEC_MSK)
     {
-        //
-        // Handle Error Condition here
-        //
-
-        //
-        // Clear CAN_STATUS_LEC_MSK Flag
-        //
+        // Clear the flag
         g_ui32ErrFlag &= ~(CAN_STATUS_LEC_MSK);
     }
 
@@ -553,6 +408,8 @@ CANErrorHandler(void)
     }
 }
 
+tCANBitClkParms clkBits;
+
 //*****************************************************************************
 //
 // Set up the system, initialize the UART, Graphics, and CAN. Then poll the
@@ -575,13 +432,12 @@ main(void)
     //
     // Set the clocking to run directly from the crystal.
     //
-    ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
-                       SYSCTL_OSC_MAIN);
+    ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ | SYSCTL_OSC_MAIN);
     //
     // Initialize CAN0
     //
     InitCAN0();
-
+    CANBitTimingGet(CAN0_BASE, &clkBits);
     IntMasterEnable();
 
     while(1) {
@@ -597,7 +453,8 @@ main(void)
             // received data must also be provided, so set the buffer pointer
             // within the message object.
             //
-            g_sCAN0RxMessage.pui8MsgData = (uint8_t *) &g_ui8RXMsgData;
+            g_sCAN0RxMessage.pui8MsgData = &g_ui8RXMsgData;
+//            g_sCAN0RxMessage.ui32MsgLen = sizeof(g_ui8RXMsgData);
 
             //
             // Read the message from the CAN.  Message object RXOBJECT is used
@@ -608,7 +465,8 @@ main(void)
             CANMessageGet(CAN0_BASE, RXOBJECT, &g_sCAN0RxMessage, 0);
 
             // Set leds
-            writeLEDs((*g_sCAN0RxMessage.pui8MsgData)&0x0F);
+//            writeLEDs((*g_sCAN0RxMessage.pui8MsgData)&0x0F);
+            writeLEDs((g_ui8RXMsgData)&0x0F);
 
             //
             // Clear the pending message flag so that the interrupt handler can

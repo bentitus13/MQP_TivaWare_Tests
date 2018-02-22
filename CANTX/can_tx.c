@@ -211,6 +211,7 @@ CAN0IntHandler(void)
         // prevent unnecessary error handling from happeneing
         //
         g_ui32ErrFlag = 0;
+//        CANDisable(CAN0_BASE);
     }
 
     //
@@ -239,12 +240,12 @@ uint8_t readSwitches(void) {
 void
 InitCAN0(void)
 {
-    // Enable port F
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-    // Enable pins F0, F1, F2, F3
-    GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
-    // Enable pull ups on F0, F1, F2, F3
-    GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+//    // Enable port F
+//    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+//    // Enable pins F0, F1, F2, F3
+//    GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
+//    // Enable pull ups on F0, F1, F2, F3
+//    GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 
     //
     // For this example CAN0 is used with RX and TX pins on port E4 and E5.
@@ -284,7 +285,10 @@ InitCAN0(void)
     // of this one, if needed.
     // In this example, the CAN bus is set to 500 kHz.
     //
-    CANBitRateSet(CAN0_BASE, SysCtlClockGet(), 500000);
+    CANBitRateSet(CAN0_BASE, SysCtlClockGet(), 1000000);
+
+    // Disable automatic retransmission
+    CANRetrySet(CAN0_BASE, false);
 
     //
     // Enable interrupts on the CAN peripheral.  This example uses static
@@ -311,7 +315,7 @@ InitCAN0(void)
     // messages.  The message will be 1 bytes that will contain the character
     // received from the other controller. Initially it will be set to 0.
     //
-    g_ui8TXMsgData = readSwitches();
+//    g_ui8TXMsgData = readSwitches();
     g_sCAN0TxMessage.ui32MsgID = CAN0TXID;
     g_sCAN0TxMessage.ui32MsgIDMask = 0;
     g_sCAN0TxMessage.ui32Flags = MSG_OBJ_TX_INT_ENABLE;
@@ -526,6 +530,7 @@ CANErrorHandler(void)
 
     }
 }
+tCANBitClkParms clkBits;
 
 //*****************************************************************************
 //
@@ -557,8 +562,10 @@ main(void)
     //
     InitCAN0();
     unsigned int count = 0;
+    uint8_t msg = 0;
 
     IntMasterEnable();
+    CANBitTimingGet(CAN0_BASE, &clkBits);
     //
     // Poll UART for data, transmit across CAN when something is entered
     //
@@ -566,10 +573,14 @@ main(void)
     {
         count++;
 
-        if (count >= 2000000) {
+        if (count >= 4000000) {
             count = 0;
 
             if (g_ui32ErrFlag == 0) {
+//                CANEnable(CAN0_BASE);
+                *g_sCAN0TxMessage.pui8MsgData = msg;
+                msg++;
+                msg &= 0x0F;
                 //
                 // Send the CAN message using object number TXOBJECT (not the
                 // same thing as CAN ID, which is also TXOBJECT in this
@@ -578,6 +589,7 @@ main(void)
                 //
                 CANMessageSet(CAN0_BASE, TXOBJECT, &g_sCAN0TxMessage,
                               MSG_OBJ_TYPE_TX);
+
             }
         }
     }

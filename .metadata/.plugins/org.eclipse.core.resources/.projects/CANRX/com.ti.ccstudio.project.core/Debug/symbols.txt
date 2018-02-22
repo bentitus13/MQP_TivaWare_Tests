@@ -1,6 +1,6 @@
 #define __unsigned_chars__ 1	/* Predefined */
-#define __DATE__ "Feb 14 2018"	/* Predefined */
-#define __TIME__ "16:30:24"	/* Predefined */
+#define __DATE__ "Feb 21 2018"	/* Predefined */
+#define __TIME__ "17:03:29"	/* Predefined */
 #define __STDC__ 1	/* Predefined */
 #define __STDC_VERSION__ 199409L	/* Predefined */
 #define __TI_C99_COMPLEX_ENABLED__ 1	/* Predefined */
@@ -38,4 +38,3 @@
 #define ccs ccs
 #define TARGET_IS_TM4C123_RB1 1
 #define PART_TM4C123GH6PM 1
-#define _INLINE 1
