@@ -1,5 +1,7 @@
-\Debug
-\Release
-.xdchelp
-\.config
-\.launches
+*\Debug\*
+*\Release\*
+*\.xdchelp\*
+*\.config\*
+*\.launches\*
+.jxbrowser-data\*
+.metadata\*
