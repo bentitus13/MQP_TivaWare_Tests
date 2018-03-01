@@ -70,14 +70,13 @@
 
 #define TASKSTACKSIZE   512
 
-tHIDClassDescriptorInfo HID_Descriptor_Info {USB_HID_DTYPE_REPORT, // Set descriptor type
-                                             1
+tHIDClassDescriptorInfo HID_Descriptor_Info {
 
 }
 
 // HID Descriptor init
 tHIDDescriptor HID = {0x02,               // Set length to 2 (indicate long data type)
-                      USB_HID_DTYPE_HID,  // Set type of item to 3 (reserved)
+                      0x03,               // Set type of item to 3 (reserved)
                       0x0111,             // Set version of HID used (1.11 = 0x0111)
                       USB_HID_COUNTRY_US, // Set country code (US = 33)
                       1,                  // Set number of descriptors (at least 1)
