@@ -2,20 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="" key="selection"/>
+		<item value="USB_HID_DTYPE" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="USB_HID_DTYPE"/>
+			<item value="hid"/>
 			<item value="descriptor"/>
 			<item value="tDevice"/>
 			<item value="eget"/>
 			<item value="get"/>
 			<item value="read"/>
 			<item value="int"/>
-			<item value="can"/>
-			<item value="`"/>
 		</list>
 		<list key="replacehistory">
 		</list>
