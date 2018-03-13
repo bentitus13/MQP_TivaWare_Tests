@@ -271,12 +271,9 @@ main(void)
     uint8_t msg = 0;
 
     IntMasterEnable();
-    CANBitTimingGet(CAN0_BASE, &clkBits);
-    //
+
     // Poll UART for data, transmit across CAN when something is entered
-    //
-    while(1)
-    {
+    while(1) {
         count++;
 
         // When count has reached a big number

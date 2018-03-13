@@ -27,8 +27,8 @@
 								<listOptionValue builtIn="false" value="LINKER_COMMAND_FILE=tm4c123gh6pm.cmd"/>
 								<listOptionValue builtIn="false" value="RUNTIME_SUPPORT_LIBRARY=libc.a"/>
 								<listOptionValue builtIn="false" value="OUTPUT_TYPE=executable"/>
-								<listOptionValue builtIn="false" value="PRODUCTS=com.ti.rtsc.TIRTOStivac:2.16.0.08;"/>
-								<listOptionValue builtIn="false" value="PRODUCT_MACRO_IMPORTS={&quot;com.ti.rtsc.TIRTOStivac&quot;:[&quot;${COM_TI_RTSC_TIRTOSTIVAC_INCLUDE_PATH}&quot;,&quot;${COM_TI_RTSC_TIRTOSTIVAC_LIBRARY_PATH}&quot;,&quot;${COM_TI_RTSC_TIRTOSTIVAC_LIBRARIES}&quot;,&quot;${COM_TI_RTSC_TIRTOSTIVAC_SYMBOLS}&quot;]}"/>
+								<listOptionValue builtIn="false" value="PRODUCTS=tm4c:2.1.3.156;"/>
+								<listOptionValue builtIn="false" value="PRODUCT_MACRO_IMPORTS={&quot;tm4c&quot;:[&quot;${COM_TI_TM4C_INCLUDE_PATH}&quot;,&quot;${COM_TI_TM4C_LIBRARY_PATH}&quot;,&quot;${COM_TI_TM4C_LIBRARIES}&quot;,&quot;${COM_TI_TM4C_SYMBOLS}&quot;]}"/>
 							</option>
 							<option id="com.ti.ccstudio.buildDefinitions.core.OPT_CODEGEN_VERSION.829955554" name="Compiler version" superClass="com.ti.ccstudio.buildDefinitions.core.OPT_CODEGEN_VERSION" value="16.12.0.STS" valueType="string"/>
 							<targetPlatform id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.exe.targetPlatformDebug.812089151" name="Platform" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.exe.targetPlatformDebug"/>
@@ -40,7 +40,7 @@
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.FLOAT_SUPPORT.846775391" name="Specify floating point support (--float_support)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.FLOAT_SUPPORT" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.FLOAT_SUPPORT.FPv4SPD16" valueType="enumerated"/>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.GCC.1304245462" name="Enable support for GCC extensions (DEPRECATED) (--gcc)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.GCC" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.DEFINE.1037480331" name="Pre-define NAME (--define, -D)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.DEFINE" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="${COM_TI_RTSC_TIRTOSTIVAC_SYMBOLS}"/>
+									<listOptionValue builtIn="false" value="${COM_TI_TM4C_SYMBOLS}"/>
 									<listOptionValue builtIn="false" value="ccs=&quot;ccs&quot;"/>
 									<listOptionValue builtIn="false" value="PART_TM4C123GH6PM"/>
 								</option>
@@ -51,7 +51,7 @@
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.DISPLAY_ERROR_NUMBER.267877409" name="Emit diagnostic identifier numbers (--display_error_number, -pden)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.DISPLAY_ERROR_NUMBER" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.DIAG_WRAP.2133587507" name="Wrap diagnostic messages (--diag_wrap)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.DIAG_WRAP" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.DIAG_WRAP.off" valueType="enumerated"/>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.INCLUDE_PATH.1376017120" name="Add dir to #include search path (--include_path, -I)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.compilerID.INCLUDE_PATH" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${COM_TI_RTSC_TIRTOSTIVAC_INCLUDE_PATH}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${COM_TI_TM4C_INCLUDE_PATH}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${PROJECT_ROOT}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${SW_ROOT}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/include&quot;"/>
@@ -71,12 +71,12 @@
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.linkerID.DISPLAY_ERROR_NUMBER.1774685350" name="Emit diagnostic identifier numbers (--display_error_number)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.linkerID.DISPLAY_ERROR_NUMBER" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.linkerID.DIAG_WRAP.179408390" name="Wrap diagnostic messages (--diag_wrap)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.linkerID.DIAG_WRAP" useByScannerDiscovery="false" value="com.ti.ccstudio.buildDefinitions.TMS470_16.12.linkerID.DIAG_WRAP.off" valueType="enumerated"/>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.linkerID.SEARCH_PATH.1957540032" name="Add &lt;dir&gt; to library search path (--search_path, -i)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.linkerID.SEARCH_PATH" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${COM_TI_RTSC_TIRTOSTIVAC_LIBRARY_PATH}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${COM_TI_TM4C_LIBRARY_PATH}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/lib&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/include&quot;"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_16.12.linkerID.LIBRARY.1351655663" name="Include library file or command file as input (--library, -l)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_16.12.linkerID.LIBRARY" useByScannerDiscovery="false" valueType="libs">
-									<listOptionValue builtIn="false" value="${COM_TI_RTSC_TIRTOSTIVAC_LIBRARIES}"/>
+									<listOptionValue builtIn="false" value="${COM_TI_TM4C_LIBRARIES}"/>
 									<listOptionValue builtIn="false" value="libc.a"/>
 									<listOptionValue builtIn="false" value="${SW_ROOT}/driverlib/ccs/Debug/driverlib.lib"/>
 								</option>
