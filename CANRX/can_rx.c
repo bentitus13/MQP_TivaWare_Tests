@@ -44,7 +44,7 @@ tCANMsgObject g_sCAN0RxMessage;
 #define RXOBJECT                1
 
 // Variable to hold received data
-uint8_t g_ui8RXMsgData;
+uint8_t g_pui8RXMsgData[8];
 
 //*****************************************************************************
 //
@@ -76,13 +76,13 @@ CAN0IntHandler(void)
     case RXOBJECT: // message received
 
         // Set message data pointer
-        g_sCAN0RxMessage.pui8MsgData = &g_ui8RXMsgData;
+        g_sCAN0RxMessage.pui8MsgData = g_pui8RXMsgData;
 
         // Get message data
         CANMessageGet(CAN0_BASE, RXOBJECT, &g_sCAN0RxMessage, 1);
 
         // Write received data to LEDs
-        writeLEDs(g_ui8RXMsgData);
+        writeLEDs(g_pui8RXMsgData[0]);
 
         // Increment received message count
         g_ui32RXMsgCount++;
@@ -137,15 +137,15 @@ void InitCAN0(void) {
     CANEnable(CAN0_BASE);
 
     // Set up receive message object
-    g_sCAN0RxMessage.ui32MsgID = 2;     // Accept any ID
+    g_sCAN0RxMessage.ui32MsgID = 0x188;     // Accept any ID
     g_sCAN0RxMessage.ui32MsgIDMask = 0; // Accept any ID
     // Interrupt enable and use ID filter
     g_sCAN0RxMessage.ui32Flags = MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER;
 //    g_sCAN0RxMessage.ui32Flags = MSG_OBJ_RX_INT_ENABLE;
     // Message length = 1 byte (g_ui8RXMsgData is 8 bits long)
 //    g_sCAN0RxMessage.ui32MsgLen = sizeof(g_ui8RXMsgData);
-    g_sCAN0RxMessage.ui32MsgLen = 0x01;
-    g_sCAN0RxMessage.pui8MsgData = (unsigned char *)&g_ui8RXMsgData;
+    g_sCAN0RxMessage.ui32MsgLen = 0x02;
+    g_sCAN0RxMessage.pui8MsgData = (unsigned char *)&g_pui8RXMsgData;
 
     // Load message 1 with g_sCAN0RxMessage settings
     CANMessageSet(CAN0_BASE, RXOBJECT, &g_sCAN0RxMessage, MSG_OBJ_TYPE_RX);
